@@ -1,5 +1,6 @@
 package com.myorg;
 
+import com.myorg.constructs.PortfolioApiConstruct;
 import com.myorg.constructs.StatusLamdaConstruct;
 
 import software.amazon.awscdk.Stack;
@@ -7,6 +8,7 @@ import software.amazon.awscdk.StackProps;
 import software.amazon.awscdk.services.apigateway.LambdaRestApi;
 import software.amazon.awscdk.services.apigateway.StageOptions;
 import software.amazon.awscdk.services.lambda.Function;
+import software.amazon.awscdk.services.servicecatalog.Portfolio;
 import software.constructs.Construct;
 
 public class BackendAwsPortfolioStack extends Stack {
@@ -28,13 +30,8 @@ public class BackendAwsPortfolioStack extends Stack {
         // Define the Lambda function
         StatusLamdaConstruct statusService = new StatusLamdaConstruct(this, "StatusService");
 
-        LambdaRestApi api = LambdaRestApi.Builder.create(this, "PortFolioApi")
-                .handler(statusService.getLambdaFunction()) // referencia a la función lambda
-                .proxy(true) // habilita la integración proxy
-                .deployOptions(StageOptions.builder()
-                        .stageName("prod")  //define el entorno de producción
-                        .build())
-                .build();
+        new PortfolioApiConstruct(this, "PortFolioApi", statusService.getLambdaFunction());
+
 
     }
 }
