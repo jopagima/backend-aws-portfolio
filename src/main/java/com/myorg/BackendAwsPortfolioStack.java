@@ -1,17 +1,16 @@
 package com.myorg;
 
-import software.constructs.Construct;
-import software.amazon.awscdk.Duration;
+import com.myorg.constructs.StatusLamdaConstruct;
+
 import software.amazon.awscdk.Stack;
 import software.amazon.awscdk.StackProps;
-// import software.amazon.awscdk.Duration;
-// import software.amazon.awscdk.services.sqs.Queue;
-import software.amazon.awscdk.services.lambda.*;
-import software.amazon.awscdk.services.lambda.Runtime;
 import software.amazon.awscdk.services.apigateway.LambdaRestApi;
 import software.amazon.awscdk.services.apigateway.StageOptions;
+import software.amazon.awscdk.services.lambda.Function;
+import software.constructs.Construct;
 
 public class BackendAwsPortfolioStack extends Stack {
+
     public BackendAwsPortfolioStack(final Construct scope, final String id) {
         this(scope, id, null);
     }
@@ -27,16 +26,10 @@ public class BackendAwsPortfolioStack extends Stack {
         // .build();
 
         // Define the Lambda function
-        Function statusLambda = Function.Builder.create(this, "StatusLambda")
-                .runtime(Runtime.JAVA_21)
-                .handler("com.portfolio.statuslambda.StatusHandler")
-                .code(Code.fromAsset("services/status-lambda/target/status-lambda-0.0.1-SNAPSHOT.jar"))
-                .memorySize(512)
-                .timeout(Duration.seconds(15))
-                .build();
+        StatusLamdaConstruct statusService = new StatusLamdaConstruct(this, "StatusService");
 
         LambdaRestApi api = LambdaRestApi.Builder.create(this, "PortFolioApi")
-                .handler(statusLambda) // referencia a la función lambda
+                .handler(statusService.getLambdaFunction()) // referencia a la función lambda
                 .proxy(true) // habilita la integración proxy
                 .deployOptions(StageOptions.builder()
                         .stageName("prod")  //define el entorno de producción
