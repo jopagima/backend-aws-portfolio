@@ -1,7 +1,3 @@
-Here is the comprehensive **README.md** for your project, written in professional English with a focus on your transition toward a **Senior Cloud Architect** role.
-
----
-
 # 🚀 AWS Serverless Portfolio Backend
 
 This repository serves as the core of my **Roadmap to Senior Backend & Cloud Architect**. The primary objective is to demonstrate a successful transition from a solid foundation in enterprise development (Java/Spring) to highly scalable, **Serverless Native** architectures on AWS using **AWS CDK** as the Infrastructure as Code (IaC) engine [3, Previous Conversation].
@@ -64,5 +60,4 @@ Run these from the project root:
 *   `cdk deploy --profile portfolio`: Deploy the entire infrastructure to your AWS account.
 *   `cdk diff`: Compare the local state with the deployed cloud resources.
 
----
-*This project demonstrates the technical capability to transform Java Enterprise knowledge into modern, scalable cloud solutions.* [Previous Conversation].
+
