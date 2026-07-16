@@ -30,9 +30,11 @@ public class BackendAwsPortfolioStack extends Stack {
 
         
         // Define the Lambda function
-        StatusLamdaConstruct statusService = new StatusLamdaConstruct(this, "StatusService");
+         DynamoDBConstruct database = new DynamoDBConstruct(this, "PortfolioDatabase");
+        StatusLamdaConstruct statusService = new StatusLamdaConstruct(this, "StatusService", 
+    database.getTable().getTableName());
         
-        DynamoDBConstruct database = new DynamoDBConstruct(this, "PortfolioDatabase");
+       
         //Add permissions to read/write to Lambda
         database.getTable().grantReadWriteData(statusService.getLambdaFunction());
         
