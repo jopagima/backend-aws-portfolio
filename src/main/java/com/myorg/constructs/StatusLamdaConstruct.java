@@ -21,6 +21,7 @@ public class StatusLamdaConstruct extends Construct {
                 .code(Code.fromAsset("services/status-lambda/target/status-lambda-0.0.1-SNAPSHOT.jar"))
                 .memorySize(512)
                 .timeout(Duration.seconds(15))
+                .tracing(Tracing.ACTIVE) // Habilita Observabilidad con X-Ray [6]
                 .build();
     }
 

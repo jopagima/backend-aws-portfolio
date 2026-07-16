@@ -1,5 +1,6 @@
 package com.myorg;
 
+import com.myorg.constructs.DynamoDBConstruct;
 import com.myorg.constructs.PortfolioApiConstruct;
 import com.myorg.constructs.StatusLamdaConstruct;
 
@@ -27,9 +28,15 @@ public class BackendAwsPortfolioStack extends Stack {
         // .visibilityTimeout(Duration.seconds(300))
         // .build();
 
+        
         // Define the Lambda function
         StatusLamdaConstruct statusService = new StatusLamdaConstruct(this, "StatusService");
-
+        
+        DynamoDBConstruct database = new DynamoDBConstruct(this, "PortfolioDatabase");
+        //Add permissions to read/write to Lambda
+        database.getTable().grantReadWriteData(statusService.getLambdaFunction());
+        
+        
         new PortfolioApiConstruct(this, "PortFolioApi", statusService.getLambdaFunction());
 
 
