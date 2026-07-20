@@ -23,10 +23,9 @@ class StatusHandlerTests {
         StatusService service = new StatusService(mockDdb);
         
         // 3. Ejecutamos la lógica
-        String result = service.getStatusMessage();
+        service.recordAccess("test-user", "2023-01-01T00:00:00Z");
         
-        // 4. Verificaciones
-        assertTrue(result.contains("running"));
+        // 4. Verificamos que se llamó al putItem con los parámetros correctos
         // Verificamos que se intentó llamar a DynamoDB una vez [9, 10]
         Mockito.verify(mockDdb, Mockito.times(1)).putItem(Mockito.any(software.amazon.awssdk.services.dynamodb.model.PutItemRequest.class));
     }	

@@ -1,15 +1,15 @@
 package com.myorg;
 
+import com.myorg.constructs.AuthConstruct;
 import com.myorg.constructs.DynamoDBConstruct;
 import com.myorg.constructs.PortfolioApiConstruct;
 import com.myorg.constructs.StatusLamdaConstruct;
 
 import software.amazon.awscdk.Stack;
 import software.amazon.awscdk.StackProps;
-import software.amazon.awscdk.services.apigateway.LambdaRestApi;
-import software.amazon.awscdk.services.apigateway.StageOptions;
-import software.amazon.awscdk.services.lambda.Function;
-import software.amazon.awscdk.services.servicecatalog.Portfolio;
+import software.amazon.awscdk.services.apigateway.AuthorizationType;
+import software.amazon.awscdk.services.apigateway.LambdaIntegration;
+import software.amazon.awscdk.services.apigateway.MethodOptions;
 import software.constructs.Construct;
 
 public class BackendAwsPortfolioStack extends Stack {
@@ -28,19 +28,22 @@ public class BackendAwsPortfolioStack extends Stack {
         // .visibilityTimeout(Duration.seconds(300))
         // .build();
 
-        
         // Define the Lambda function
-         DynamoDBConstruct database = new DynamoDBConstruct(this, "PortfolioDatabase");
-        StatusLamdaConstruct statusService = new StatusLamdaConstruct(this, "StatusService", 
-    database.getTable().getTableName());
-        
-       
-        //Add permissions to read/write to Lambda
-        database.getTable().grantReadWriteData(statusService.getLambdaFunction());
-        
-        
-        new PortfolioApiConstruct(this, "PortFolioApi", statusService.getLambdaFunction());
+        DynamoDBConstruct database = new DynamoDBConstruct(this, "PortfolioDatabase");
+        StatusLamdaConstruct statusService = new StatusLamdaConstruct(this, "StatusService",
+                database.getTable().getTableName());
 
+        // Add permissions to read/write to Lambda
+        database.getTable().grantReadWriteData(statusService.getLambdaFunction());
+
+        PortfolioApiConstruct api = new PortfolioApiConstruct(this, "PortFolioApi", statusService.getLambdaFunction());
+
+        AuthConstruct authConstruct = new AuthConstruct(this, "PortfolioAuth");
+        api.getRoot().addMethod("GET", new LambdaIntegration(statusService.getLambdaFunction()),
+               MethodOptions.builder()
+                        .authorizationType(AuthorizationType.COGNITO) //Define que se requiere cognito
+                        .authorizer(authConstruct.getAuthorizer()) //asocia el autorizador de cognito al método
+                        .build());
 
     }
 }

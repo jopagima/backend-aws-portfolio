@@ -1,5 +1,7 @@
 package com.portfolio.statuslambda;
 
+import java.util.Map;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
@@ -16,7 +18,14 @@ public class StatusHandler implements RequestHandler <APIGatewayProxyRequestEven
 
 	@Override
 	public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
-		String message = processBusinessLogic();
+	
+
+		//Extraer el userId del contexto de autorización (si está disponible)
+		Map<String, Object> authorizerContext = (Map<String, Object>) input.getRequestContext().getAuthorizer();
+		String userId = statusService.extractUserIdFromEvent(authorizerContext);
+		context.getLogger().log("UserId: " + userId);
+
+		String message = processBusinessLogic(userId);
 
 		return new APIGatewayProxyResponseEvent()
 		.withStatusCode(200)
@@ -28,8 +37,11 @@ public class StatusHandler implements RequestHandler <APIGatewayProxyRequestEven
 	 
 
 
-	public String processBusinessLogic() {
+	public String processBusinessLogic(String userId) {
 		// Implement your business logic here
+		String timestamp = java.time.Instant.now().toString();
+        //1. ejectuar la escritura
+        statusService.recordAccess(userId, timestamp);
 		return statusService.getStatusMessage();
 	}
 

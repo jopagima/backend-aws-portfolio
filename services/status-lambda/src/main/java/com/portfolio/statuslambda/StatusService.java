@@ -19,10 +19,7 @@ public class StatusService {
     }
 
     public String getStatusMessage() {
-        String timestamp = java.time.Instant.now().toString();
 
-        //1. ejectuar la escritura
-        recordAccess("anonymous-user", timestamp);
         return "Service is running and access recorded";
     }
 
@@ -64,6 +61,7 @@ public class StatusService {
 
         //El sdk de API Gateway + Cognito envía un mapa con la estructura de claims, 
         // de donde se puede extraer el sub (UUID del usuario)
+        @SuppressWarnings("unchecked")
         Map<String, Object> claims = (Map<String, Object>) authorizerContext.get("claims");
 
         // El claim 'sub' es el identificador único del usuario en Cognito, si no existe se retorna un valor por defecto
