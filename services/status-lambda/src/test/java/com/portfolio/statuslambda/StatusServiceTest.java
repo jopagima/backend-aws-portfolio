@@ -76,5 +76,20 @@ public class StatusServiceTest {
 
     }
 
+    @Test
+    public void shouldExtractUserIdFromCognitoClaims() {
+        //1. simular la estructura que envía API Gateway + Cognito
+        Map<String, Object> claims = Map.of(
+            "sub", "user-12345-uuid",
+            "email", "test@porfolio.com"
+        );
+
+        Map<String, Object> authorizer = Map.of("claims", claims);
+
+        //2. Ejecutar la lógica de extacción 
+        String extractedId = service.extractUserIdFromEvent(authorizer);
+        assertEquals("user-12345-uuid", extractedId);
+    }
+
 
 }

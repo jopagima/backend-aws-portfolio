@@ -51,4 +51,23 @@ public class StatusService {
         return ddb.query(queryRequest).items();
     }
 
+    /**
+    * Extrae el identificador único (sub) de los claims de Cognito [4, 5]
+    * @param authorizerContext El mapa 'authorizer' proveniente del requestContext
+    * @return El UUID del usuario o 'anonymous' si no hay claims
+    */
+    public String extractUserIdFromEvent(Map<String, Object> authorizerContext) {
+
+        if(authorizerContext == null || !authorizerContext.containsKey("claims")) {
+            return "anonymous-user";
+        }
+
+        //El sdk de API Gateway + Cognito envía un mapa con la estructura de claims, 
+        // de donde se puede extraer el sub (UUID del usuario)
+        Map<String, Object> claims = (Map<String, Object>) authorizerContext.get("claims");
+
+        // El claim 'sub' es el identificador único del usuario en Cognito, si no existe se retorna un valor por defecto
+        return claims.getOrDefault("sub", "anonymous-user").toString();
+    }
+
 }
