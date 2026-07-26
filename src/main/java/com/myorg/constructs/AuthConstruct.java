@@ -39,7 +39,9 @@ public class AuthConstruct extends Construct {
         this.userPool.addClient("PortfolioAppClient", UserPoolClientOptions.builder()
                 .generateSecret(false)
                 .authFlows(AuthFlow.builder()
+                        .userSrp(true) // ESTO HABILITA USER_SRP_AUTH
                         .userPassword(true)
+                        .custom(true)
                         .build())
                 .build());
 

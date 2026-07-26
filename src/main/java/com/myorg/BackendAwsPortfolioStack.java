@@ -12,6 +12,11 @@ import software.amazon.awscdk.services.apigateway.LambdaIntegration;
 import software.amazon.awscdk.services.apigateway.MethodOptions;
 import software.constructs.Construct;
 
+import software.amazon.awscdk.services.apigateway.CorsOptions;
+import software.amazon.awscdk.services.apigateway.Cors;
+import java.util.List;
+
+
 public class BackendAwsPortfolioStack extends Stack {
 
     public BackendAwsPortfolioStack(final Construct scope, final String id) {
@@ -44,6 +49,8 @@ public class BackendAwsPortfolioStack extends Stack {
                         .authorizationType(AuthorizationType.COGNITO) //Define que se requiere cognito
                         .authorizer(authConstruct.getAuthorizer()) //asocia el autorizador de cognito al método
                         .build());
+
+
 
     }
 }
