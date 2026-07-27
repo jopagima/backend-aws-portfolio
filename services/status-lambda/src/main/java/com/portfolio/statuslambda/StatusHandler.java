@@ -29,6 +29,10 @@ public class StatusHandler implements RequestHandler <APIGatewayProxyRequestEven
 
 		return new APIGatewayProxyResponseEvent()
 		.withStatusCode(200)
+				.withHeaders(Map.of(
+				"Access-Control-Allow-Origin", "http://localhost:3000",
+				"Content-Type", "application/json"
+		))
 		.withBody("{\"status\": \"" + message + "\"}")
 		.withIsBase64Encoded(false);
 	}

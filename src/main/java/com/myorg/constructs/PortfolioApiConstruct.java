@@ -35,7 +35,8 @@ public class PortfolioApiConstruct extends Construct {
                     "Authorization", // Vital para enviar el token de Cognito [6]
                     "X-Api-Key"
             ))
-            .build());                
+            .build());    
+          
     }
     /**
      * Expone el recurso raíz de la API para permitir la configuración de 
