@@ -2,6 +2,7 @@ package com.myorg;
 
 import com.myorg.constructs.AuthConstruct;
 import com.myorg.constructs.DynamoDBConstruct;
+import com.myorg.constructs.PortfolioAccessQueue;
 import com.myorg.constructs.PortfolioApiConstruct;
 import com.myorg.constructs.StatusLamdaConstruct;
 
@@ -10,11 +11,13 @@ import software.amazon.awscdk.StackProps;
 import software.amazon.awscdk.services.apigateway.AuthorizationType;
 import software.amazon.awscdk.services.apigateway.LambdaIntegration;
 import software.amazon.awscdk.services.apigateway.MethodOptions;
+import software.amazon.awscdk.services.sqs.Queue;
 import software.constructs.Construct;
 
 import software.amazon.awscdk.services.apigateway.CorsOptions;
 import software.amazon.awscdk.services.apigateway.Cors;
 import java.util.List;
+
 
 
 public class BackendAwsPortfolioStack extends Stack {
@@ -35,8 +38,15 @@ public class BackendAwsPortfolioStack extends Stack {
 
         // Define the Lambda function
         DynamoDBConstruct database = new DynamoDBConstruct(this, "PortfolioDatabase");
+
+        PortfolioAccessQueue portfolioAccessQueue = new PortfolioAccessQueue(this, "PortfolioAccessQueue");
+        Queue accessQueue = portfolioAccessQueue.getPortfolioAccessQueue();
+
         StatusLamdaConstruct statusService = new StatusLamdaConstruct(this, "StatusService",
-                database.getTable().getTableName());
+                database.getTable().getTableName(), accessQueue.getQueueUrl());
+                // Otorgar permiso de productor a la Lambda de API [13, 14]
+        accessQueue.grantSendMessages(statusService.getLambdaFunction());
+
 
         // Add permissions to read/write to Lambda
         database.getTable().grantReadWriteData(statusService.getLambdaFunction());
@@ -49,6 +59,8 @@ public class BackendAwsPortfolioStack extends Stack {
                         .authorizationType(AuthorizationType.COGNITO) //Define que se requiere cognito
                         .authorizer(authConstruct.getAuthorizer()) //asocia el autorizador de cognito al método
                         .build());
+
+        
 
 
 
