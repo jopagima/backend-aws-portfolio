@@ -7,13 +7,14 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
+import software.amazon.awssdk.services.sqs.SqsClient;
 
 
 public class StatusHandler implements RequestHandler <APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent>  {
 
 
 	 // Inicializamos el cliente real aquí para el entorno de AWS [6, 7]
-    private final StatusService statusService = new StatusService(DynamoDbClient.create());
+    private final StatusService statusService = new StatusService(DynamoDbClient.create(), SqsClient.create());
 
 
 	@Override
@@ -44,8 +45,14 @@ public class StatusHandler implements RequestHandler <APIGatewayProxyRequestEven
 	public String processBusinessLogic(String userId) {
 		// Implement your business logic here
 		String timestamp = java.time.Instant.now().toString();
-        //1. ejectuar la escritura
+       
+		//1. ejectuar la escritura
+		/*
         statusService.recordAccess(userId, timestamp);
+		*/
+    
+		statusService.sendMessageToQueue(userId, timestamp);
+	
 		return statusService.getStatusMessage();
 	}
 

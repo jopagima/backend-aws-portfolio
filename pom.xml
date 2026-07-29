@@ -43,6 +43,12 @@
             <artifactId>aws-cdk-lib</artifactId>
             <version>${cdk.version}</version>
         </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>sqs</artifactId>
+            <!-- Se recomienda usar la misma versión que tengas para otros módulos del SDK v2 -->
+            <version>${cdk.version}</version> 
+        </dependency>        
 
         <dependency>
             <groupId>software.constructs</groupId>

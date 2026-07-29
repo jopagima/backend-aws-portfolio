@@ -2,6 +2,8 @@ package com.portfolio.statuslambda;
 
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.*; 
+import software.amazon.awssdk.services.sqs.SqsClient;
+import software.amazon.awssdk.services.sqs.model.SendMessageRequest;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -11,16 +13,36 @@ public class StatusService {
 
     private  final DynamoDbClient ddb;
     private static final String TABLE_NAME = System.getenv("TABLE_NAME");
+    private final SqsClient sqsClient ;
+    private final String QUEUE_URL = System.getenv("QUEUE_URL");
 
 
     // Constructor para inyección (Senior practice)
-    public StatusService(DynamoDbClient ddb) {
+    public StatusService(DynamoDbClient ddb,  SqsClient sqsClient) {
         this.ddb = ddb;
+        this.sqsClient = sqsClient;
+
     }
 
     public String getStatusMessage() {
 
         return "Service is running and access recorded";
+    }
+
+    public void sendMessageToQueue(String userId, String timestamp) {
+         // Construimos el mensaje JSON con los datos del acceso
+        
+        String message = String.format("{\"userId\": \"%s\", \"timestamp\": \"%s\"}", 
+                             userId, timestamp);
+                             
+        SendMessageRequest sendMsgRequest = SendMessageRequest.builder()
+                .queueUrl(QUEUE_URL)
+                .messageBody(message)
+                .delaySeconds(0) // El mensaje es visible inmediatamente [4, 5]
+                .build();
+
+        sqsClient.sendMessage(sendMsgRequest);
+
     }
 
     public void recordAccess(String userId, String timestamp) {

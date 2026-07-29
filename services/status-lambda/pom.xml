@@ -52,7 +52,11 @@
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>dynamodb</artifactId>
-        </dependency>        
+        </dependency> 
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>sqs</artifactId>
+        </dependency>       
         <!-- JUnit 5 para tus tests de Senior -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -65,7 +69,13 @@
             <artifactId>mockito-core</artifactId>
             <version>5.11.0</version>
             <scope>test</scope>
-        </dependency>  
+        </dependency> 
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>5.11.0</version>
+            <scope>test</scope>
+        </dependency>         
         <!-- Implementación de Logging para Lambda -->
         <dependency>
             <groupId>com.amazonaws</groupId>

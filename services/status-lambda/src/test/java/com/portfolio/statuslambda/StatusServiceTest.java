@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.*; 
+import software.amazon.awssdk.services.sqs.SqsClient;
 
 
 
@@ -22,20 +23,30 @@ import static org.mockito.Mockito.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import software.amazon.awssdk.services.sqs.SqsClient;
 
 
 import com.portfolio.statuslambda.StatusService; 
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.Mock;
+import org.mockito.InjectMocks;
 
+@ExtendWith(MockitoExtension.class)
 public class StatusServiceTest {
 
     DynamoDbClient mockDdb;
-    StatusService service;
+  
+    private SqsClient sqsClient; // No intentará buscar región porque es un Mock
+
+    private StatusService service;
 
     @BeforeEach
     void setup() {
             // 1. Creamos un Mock del cliente de AWS (no necesita región) [8]
         mockDdb = Mockito.mock(DynamoDbClient.class);
-        service = new StatusService(mockDdb);
+        sqsClient = Mockito.mock(SqsClient.class);
+        service = new StatusService(mockDdb, sqsClient);
     }
 
     @Test

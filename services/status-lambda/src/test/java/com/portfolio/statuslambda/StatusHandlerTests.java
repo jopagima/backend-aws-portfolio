@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import com.portfolio.statuslambda.StatusHandler; 
 import com.portfolio.statuslambda.StatusService; 
+import software.amazon.awssdk.services.sqs.SqsClient;
 
 import org.mockito.Mockito;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
@@ -18,9 +19,9 @@ class StatusHandlerTests {
 	public void testProcessBusinessLogicBusinessLogicWithMock() {
         // 1. Creamos un Mock del cliente de AWS (no necesita región) [8]
         DynamoDbClient mockDdb = Mockito.mock(DynamoDbClient.class);
-        
+        SqsClient mockSqs = Mockito.mock(SqsClient.class);
         // 2. Inyectamos el mock en el servicio
-        StatusService service = new StatusService(mockDdb);
+        StatusService service = new StatusService(mockDdb, mockSqs);
         
         // 3. Ejecutamos la lógica
         service.recordAccess("test-user", "2023-01-01T00:00:00Z");
