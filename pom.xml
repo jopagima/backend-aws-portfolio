@@ -12,7 +12,20 @@
         <cdk.version>[2.260.0,3.0.0)</cdk.version>
         <constructs.version>[10.5.0,11.0.0)</constructs.version>
         <junit.version>5.7.1</junit.version>
+        <awssdk.version>2.25.0</awssdk.version>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>bom</artifactId>
+                <version>${awssdk.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <build>
         <plugins>
@@ -46,9 +59,7 @@
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>sqs</artifactId>
-            <!-- Se recomienda usar la misma versión que tengas para otros módulos del SDK v2 -->
-            <version>${cdk.version}</version> 
-        </dependency>        
+        </dependency>
 
         <dependency>
             <groupId>software.constructs</groupId>

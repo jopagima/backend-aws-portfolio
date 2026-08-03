@@ -26,7 +26,7 @@ public class StatusService {
 
     public String getStatusMessage() {
 
-        return "Service is running and access recorded";
+        return "Service is running and access sended";
     }
 
     public void sendMessageToQueue(String userId, String timestamp) {

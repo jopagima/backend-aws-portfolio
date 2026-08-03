@@ -53,7 +53,7 @@ public class StatusServiceTest {
     public void testGetStatusMessage() {
  
         String result = service.getStatusMessage();
-        assertEquals("Service is running and access recorded", result);
+        assertEquals("Service is running and access sended", result);
     }
 
     @Test
