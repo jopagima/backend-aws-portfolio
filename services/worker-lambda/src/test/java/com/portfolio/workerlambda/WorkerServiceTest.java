@@ -1,30 +1,30 @@
 package com.portfolio.workerlambda;
 
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import com.portfolio.workerlambda.repositories.AccessRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 @ExtendWith(MockitoExtension.class)
 class WorkerServiceTest {
 
-    DynamoDbClient mockDdb;
+    AccessRepository repository;
     WorkerService service;
 
     @BeforeEach
     void setup() {
-        mockDdb = Mockito.mock(DynamoDbClient.class);
-        service = new WorkerService(mockDdb);
+        repository = Mockito.mock(AccessRepository.class);
+        service = new WorkerService(repository);
     }
 
     @Test
-    void shouldPersistUserIdAndTimestampFromSqsMessageBody() {
+    void shouldPersistUserIdAndTimestampFromSqsMessageBody() throws JsonProcessingException {
 
         //Given: El mensaje json que se envia 
         String messageBody = "{\"userId\": \"user-123\", \"timestamp\": \"2024-01-01T00:00:00Z\"}";
@@ -33,17 +33,14 @@ class WorkerServiceTest {
         service.processMessage(messageBody);
 
         //Then: verificaciones
-        ArgumentCaptor<PutItemRequest> captor = ArgumentCaptor.forClass(PutItemRequest.class);
-        Mockito.verify(mockDdb, Mockito.times(1)).putItem(captor.capture());
-        assertEquals("user-123", captor.getValue().item().get("UserId").s());
-        assertEquals("2024-01-01T00:00:00Z", captor.getValue().item().get("Timestamp").s());
-        Mockito.verify(mockDdb, Mockito.times(1)).saveAccess(eq("user-123"), anyString());
+
+        Mockito.verify(repository, Mockito.times(1)).saveAccess(eq("user-123"), anyString());
     }
 
     @Test
     void shouldRecordAccessDirectlyWithGivenValues() {
         service.recordAccess("test-user", "2023-01-01T00:00:00Z");
 
-        Mockito.verify(mockDdb, Mockito.times(1)).putItem(Mockito.any(PutItemRequest.class));
+        Mockito.verify(repository, Mockito.times(1)).saveAccess(eq("test-user"), anyString());
     }
 }

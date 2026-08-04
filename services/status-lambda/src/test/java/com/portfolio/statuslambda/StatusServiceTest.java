@@ -1,4 +1,4 @@
-package com.portfolio.statuslambda;
+package com.portfolio.workerlambda;
 
 
 import org.junit.jupiter.api.Test;
@@ -35,7 +35,7 @@ import org.mockito.InjectMocks;
 @ExtendWith(MockitoExtension.class)
 public class StatusServiceTest {
 
-    DynamoDbClient mockDdb;
+    AccessRepository mockDdb;
   
     private SqsClient sqsClient; // No intentará buscar región porque es un Mock
 
