@@ -3,8 +3,6 @@ package com.portfolio.workerlambda;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.model.*; 
 import software.amazon.awssdk.services.sqs.SqsClient;
 
 
@@ -20,13 +18,11 @@ import org.mockito.Mockito;
 import static org.mockito.Mockito.*;
 
 // Imports de utilidades de Java (Corrige variable Collections)
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import software.amazon.awssdk.services.sqs.SqsClient;
 
 
-import com.portfolio.statuslambda.StatusService; 
+import com.portfolio.statuslambda.StatusService;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.Mock;
@@ -35,18 +31,17 @@ import org.mockito.InjectMocks;
 @ExtendWith(MockitoExtension.class)
 public class StatusServiceTest {
 
-    AccessRepository mockDdb;
-  
+
+
     private SqsClient sqsClient; // No intentará buscar región porque es un Mock
 
     private StatusService service;
 
     @BeforeEach
     void setup() {
-            // 1. Creamos un Mock del cliente de AWS (no necesita región) [8]
-        mockDdb = Mockito.mock(DynamoDbClient.class);
+        // 1. Creamos un Mock del cliente de AWS (no necesita región) [8]
         sqsClient = Mockito.mock(SqsClient.class);
-        service = new StatusService(mockDdb, sqsClient);
+        service = new StatusService(sqsClient);
     }
 
     @Test
@@ -57,34 +52,21 @@ public class StatusServiceTest {
     }
 
     @Test
-    public void testRecordedAndRetrieveFlow() {
+    public void testSendMessageToQueue() {
         String userId = "user-tdd";
         String timestamp = java.time.Instant.now().toString();
 
-        //1. ejectuar la escritura
-        service.recordAccess(userId, timestamp);
+        Mockito.when(sqsClient.sendMessage(Mockito.any(software.amazon.awssdk.services.sqs.model.SendMessageRequest.class)))
+                .thenReturn(software.amazon.awssdk.services.sqs.model.SendMessageResponse.builder().messageId("msg-1").build());
 
-        //2. verificar que se llamó al putItem  con los parámetros correctos
-        ArgumentCaptor<PutItemRequest> argumentCaptor = ArgumentCaptor.forClass(PutItemRequest.class);
-        Mockito.verify(mockDdb, Mockito.times(1)).putItem(argumentCaptor.capture());
-        assertEquals(userId, argumentCaptor.getValue().item().get("UserId").s());
+        //1. ejectuar el envío del mensaje
+        service.sendMessageToQueue(userId, timestamp);
 
-        //3. Simular la resupuesta de DynamoDB para la consulta
-        QueryResponse mockResponse = QueryResponse.builder()
-                .items(Collections.singletonList(
-                        Map.of("UserId", AttributeValue.builder().s(userId).build(),
-                               "Timestamp", AttributeValue.builder().s(timestamp).build())))
-                .build();
-        Mockito.when(mockDdb.query(Mockito.any(QueryRequest.class))).thenReturn(mockResponse);
-
-
-        //4. Ejecutar consulta y validar
-
-        List<Map<String, AttributeValue>> results = service.getAccessLogs(userId);
-        assertFalse(results.isEmpty());
-        assertEquals(userId, results.get(0).get("UserId").s());
-        
-
+        //2. verificar que se llamó al sendMessage con los parámetros correctos
+        ArgumentCaptor<software.amazon.awssdk.services.sqs.model.SendMessageRequest> argumentCaptor =
+                ArgumentCaptor.forClass(software.amazon.awssdk.services.sqs.model.SendMessageRequest.class);
+        Mockito.verify(sqsClient, Mockito.times(1)).sendMessage(argumentCaptor.capture());
+        assertTrue(argumentCaptor.getValue().messageBody().contains(userId));
     }
 
     @Test

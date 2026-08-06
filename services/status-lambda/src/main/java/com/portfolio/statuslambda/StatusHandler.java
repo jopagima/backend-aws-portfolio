@@ -6,7 +6,6 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.sqs.SqsClient;
 
 
@@ -14,7 +13,7 @@ public class StatusHandler implements RequestHandler <APIGatewayProxyRequestEven
 
 
 	 // Inicializamos el cliente real aquí para el entorno de AWS [6, 7]
-    private final StatusService statusService = new StatusService(DynamoDbClient.create(), SqsClient.create());
+    private final StatusService statusService = new StatusService(SqsClient.create());
 
 
 	@Override

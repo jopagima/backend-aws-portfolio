@@ -1,25 +1,24 @@
 package com.portfolio.statuslambda;
 
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.model.*; 
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest;
-import java.time.Instant;
-import java.util.List;
+import software.amazon.awssdk.services.sqs.model.SendMessageResponse;
 import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class StatusService {
 
-    private  final DynamoDbClient ddb;
-    private static final String TABLE_NAME = System.getenv("TABLE_NAME");
+    private static final Logger logger = LoggerFactory.getLogger(StatusService.class);
+
     private final SqsClient sqsClient ;
     private final String QUEUE_URL = System.getenv("QUEUE_URL");
 
 
     // Constructor para inyección (Senior practice)
-    public StatusService(DynamoDbClient ddb,  SqsClient sqsClient) {
-        this.ddb = ddb;
+    public StatusService(SqsClient sqsClient) {
         this.sqsClient = sqsClient;
 
     }
@@ -31,45 +30,21 @@ public class StatusService {
 
     public void sendMessageToQueue(String userId, String timestamp) {
          // Construimos el mensaje JSON con los datos del acceso
-        
-        String message = String.format("{\"userId\": \"%s\", \"timestamp\": \"%s\"}", 
+
+        String message = String.format("{\"userId\": \"%s\", \"timestamp\": \"%s\"}",
                              userId, timestamp);
-                             
+
         SendMessageRequest sendMsgRequest = SendMessageRequest.builder()
                 .queueUrl(QUEUE_URL)
                 .messageBody(message)
                 .delaySeconds(0) // El mensaje es visible inmediatamente [4, 5]
                 .build();
 
-        sqsClient.sendMessage(sendMsgRequest);
+        logger.info("Sending access message to SQS queue for userId={}", userId);
+        SendMessageResponse response = sqsClient.sendMessage(sendMsgRequest);
+        logger.info("Message queued successfully. userId={}, messageId={}", userId, response.messageId());
 
     }
-
-    public void recordAccess(String userId, String timestamp) {
-        PutItemRequest request = PutItemRequest.builder()
-        .tableName(TABLE_NAME)
-        .item(Map.of(
-            "UserId", AttributeValue.builder().s(userId).build(),
-            "Timestamp", AttributeValue.builder().s(timestamp).build()
-        )).build();
-
-        // Operación de escritura en el plano de datos [20]
-        ddb.putItem(request);
-    }
-
-    public List<Map<String, AttributeValue>> getAccessLogs(String userId) {
-        // Construir la consulta para obtener los registros de acceso del usuario
-        QueryRequest queryRequest = QueryRequest.builder()
-                .tableName(TABLE_NAME)
-                .keyConditionExpression("UserId = :userId")
-                .expressionAttributeValues(Map.of(
-                    ":userId", AttributeValue.builder().s(userId).build()))
-                .build();
-
-        // Ejecutar la consulta y devolver los resultados
-        return ddb.query(queryRequest).items();
-    }
-
     /**
     * Extrae el identificador único (sub) de los claims de Cognito [4, 5]
     * @param authorizerContext El mapa 'authorizer' proveniente del requestContext
@@ -78,16 +53,19 @@ public class StatusService {
     public String extractUserIdFromEvent(Map<String, Object> authorizerContext) {
 
         if(authorizerContext == null || !authorizerContext.containsKey("claims")) {
+            logger.warn("No authorizer context/claims present, defaulting to anonymous-user");
             return "anonymous-user";
         }
 
-        //El sdk de API Gateway + Cognito envía un mapa con la estructura de claims, 
+        //El sdk de API Gateway + Cognito envía un mapa con la estructura de claims,
         // de donde se puede extraer el sub (UUID del usuario)
         @SuppressWarnings("unchecked")
         Map<String, Object> claims = (Map<String, Object>) authorizerContext.get("claims");
 
         // El claim 'sub' es el identificador único del usuario en Cognito, si no existe se retorna un valor por defecto
-        return claims.getOrDefault("sub", "anonymous-user").toString();
+        String userId = claims.getOrDefault("sub", "anonymous-user").toString();
+        logger.debug("Extracted userId={} from Cognito claims", userId);
+        return userId;
     }
 
 }

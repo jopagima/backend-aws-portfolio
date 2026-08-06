@@ -4,10 +4,11 @@ import org.jetbrains.annotations.NotNull;
 
 import software.amazon.awscdk.Duration;
 import software.amazon.awscdk.services.sqs.DeadLetterQueue;
+import software.amazon.awscdk.services.sqs.IQueue;
 import software.amazon.awscdk.services.sqs.Queue;
 import software.constructs.Construct;
 
-public class PortfolioAccessQueue extends Construct {
+public class PortfolioAccessQueue extends Construct  {
 
     private final Queue portfolioAccessQueue ;
 
