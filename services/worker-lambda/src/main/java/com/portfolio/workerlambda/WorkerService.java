@@ -3,6 +3,8 @@ package com.portfolio.workerlambda;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
+import com.amazonaws.xray.AWSXRay;
+import com.amazonaws.xray.entities.Segment;
 
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -47,6 +49,18 @@ public class WorkerService {
         if (jsonNode.has("timestamp")) {
             timestamp = jsonNode.get("timestamp").asText();
         }
+
+        // Agregar anotaciones a AWS X-Ray para rastreo
+        Segment segment = AWSXRay.getCurrentSegment();
+        if(segment == null) {
+            segment = AWSXRay.beginSegment("WorkerServiceSegment");
+        }
+         // Añadimos una anotación indexada para búsquedas rápidas en la consola [1, 3]
+        segment.putAnnotation("PortfolioUserId", userId);
+        // Podríamos añadir metadatos (no indexados) para información adicional
+        segment.putMetadata("FullMessageBody", messageBody); 
+
+
 
         logger.info("Message parsed. userId={}, timestamp={}", userId, timestamp);
 

@@ -1,63 +1,65 @@
-# 🚀 AWS Serverless Portfolio Backend
+# 🚀 AWS Serverless Portfolio: Decoupled Event-Driven Backend
 
-This repository serves as the core of my **Roadmap to Senior Backend & Cloud Architect**. The primary objective is to demonstrate a successful transition from a solid foundation in enterprise development (Java/Spring) to highly scalable, **Serverless Native** architectures on AWS using **AWS CDK** as the Infrastructure as Code (IaC) engine [3, Previous Conversation].
+This repository represents the core of my **Roadmap to Senior Backend & Cloud Architect**. It documents a professional transition from enterprise Java/Spring foundations to **Serverless Native** distributed systems on AWS, using **AWS CDK** as the Infrastructure as Code (IaC) engine.
 
 ## 🎯 Project Goals
 
-This development is not just a functional application but a practical demonstration of modern architectural standards. The project aims to build a microservices ecosystem that solves real-world problems by applying:
+The objective is to demonstrate high-level architectural patterns through a practical microservices ecosystem:
 
-*   **Serverless First:** Minimizing infrastructure management by leveraging AWS Lambda and Amazon API Gateway for automatic, cost-efficient scaling.
-*   **Infrastructure as Code (IaC):** Using **AWS CDK v2** to define the entire infrastructure through Java code, ensuring repeatable and versionable deployments [585, Previous Conversation].
-*   **SOLID Principles & Clean Architecture:** Applying enterprise design patterns, such as **Custom Constructs**, to ensure the system is modular, maintainable, and easy to test [Previous Conversation].
-*   **Senior-Level Observability:** Native integration with **AWS X-Ray** and **CloudWatch** to obtain end-to-end traceability in distributed systems [404, 413, Previous Conversation].
+*   **Serverless First:** Zero infrastructure management using AWS Lambda and Amazon API Gateway for cost-efficient, automatic scaling.
+*   **Decoupled Resilience (Event-Driven):** Implementing **Amazon SQS** as a buffer to separate API ingestion from heavy persistence logic, ensuring high availability and fault tolerance [9, 396, Historial].
+*   **SOLID Infrastructure:** Utilizing **Custom Constructs** to encapsulate cloud resources, ensuring the codebase remains modular, reusable, and versionable.
+*   **Senior-Level Observability:** Full distributed tracing with **AWS X-Ray** and structured logging in **CloudWatch**, moving beyond basic monitoring into proactive auditing.
 
-## 🏗️ System Architecture (Overview)
+## 🏗️ System Architecture (Event-Driven)
 
-The application follows a decoupled microservices model:
-1.  **Entry Point:** REST API managed by **Amazon API Gateway**.
-2.  **Compute:** Business logic executed in **AWS Lambda** using **Java 21**.
-3.  **SOLID Infrastructure:** Resources are encapsulated into **Custom Constructs** (`StatusLambdaConstruct`, `PortfolioApiConstruct`) to decouple the API from the Lambda and improve reusability [Previous Conversation].
-4.  **Clean Backend:** A strict separation between the **Handler** (AWS event entry) and the **Service Layer** (pure business logic) allows for **Unit Testing with JUnit 5** without cloud dependencies [Previous Conversation].
+The system follows a fully decoupled, asynchronous flow:
 
-## 📂 Repository Structure
+1.  **Entry Point:** **Amazon API Gateway** receives RESTful requests, validated against **Amazon Cognito** JWT tokens.
+2.  **Producer (Status Service):** An AWS Lambda (**Java 21**) extracts user identity and immediately pushes an event to an **SQS Queue**. This minimizes API latency by not waiting for DB writes [92, Historial].
+3.  **The Resilient Bridge:** **Amazon SQS** stores messages securely, decoupling the Producer from the Consumer and providing a Dead Letter Queue (DLQ) for error handling [396, Historial].
+4.  **Consumer (Worker Service):** A second Lambda function is triggered by SQS events, processing messages in batches for cost optimization.
+5.  **Persistence Layer:** Data is persisted in **Amazon DynamoDB**, a high-performance NoSQL store.
 
-```text
-.
-├── src/main/java/com/myorg/
-│   ├── BackendAwsPortfolioApp.java    # CDK Application entry point
-│   ├── BackendAwsPortfolioStack.java  # Main infrastructure orchestrator
-│   └── constructs/                    # SOLID building blocks (Layer 3 Constructs)
-├── services/                          # Microservices Logic (Backend)
-│   └── status-lambda/                 # System status microservice
-│       ├── src/main/java/             # Java 21: Handler + Service Layer
-│       └── pom.xml                    # Maven dependencies
-├── cdk.json                           # CDK Toolkit configuration
-└── pom.xml                            # Root Maven project (Infrastructure)
-```
+## 🔍 Observability & Distributed Tracing
 
-## 📈 Development Progress (Roadmap)
+As a **Senior Architect** requirement, the system is instrumented for deep visibility:
 
-Currently, we are completing **Day 5** of a continuous evolution plan [3, Previous Conversation]:
+*   **Active Tracing:** Enabled across the entire stack via **AWS X-Ray**, providing a visual **Service Map** of the request journey.
+*   **Indexed Annotations:** The `WorkerService` implements custom X-Ray annotations (e.g., `PortfolioUserId`). This allows for sub-second filtering of specific user traces within the AWS Console [Historial].
+*   **Structured Logging:** Correlated logs between the Producer and Consumer via **CloudWatch Logs Insights**, enabling complex queries to debug Jackson parsing or IAM permission issues.
 
-*   [x] **Base Configuration:** Development environment setup, CLI, security profiles, and CDK bootstrapping [Previous Conversation].
-*   [x] **Status Microservice:** Creation and deployment of the first Lambda function in Java 21 [Previous Conversation].
-*   [x] **Public Exposure:** Configuration of API Gateway with proxy integration and CORS management [Previous Conversation].
-*   [x] **SOLID Refactoring:** Migration to **Custom Constructs** and separation of logic into an independent **Service** layer [Previous Conversation].
-*   [ ] **Observability:** Activation of **AWS X-Ray** for distributed tracing [421, Previous Conversation].
-*   [ ] **Persistence (Next Step):** Implementation of **Amazon DynamoDB** for high-performance NoSQL data storage [551, Previous Conversation].
+## 📈 Roadmap Progress
 
-## 🛠️ Development Commands
+Currently completing the **Observability Phase (Day 13)** [Roadmap]:
 
-**For the Backend (Java):**
-Generate the artifact (Fat JAR) before deployment:
+- [x] **Base Configuration:** CDK Bootstrapping, CLI profiles, and security setup.
+- [x] **Status Microservice:** Implementation of the first Lambda Producer.
+- [x] **Security Integration:** Cognito User Pools and API Gateway Authorizers.
+- [x] **Asynchronous Flow:** SQS integration and Worker Lambda implementation.
+- [x] **Data Persistence:** DynamoDB schema design and Repository pattern implementation.
+- [x] **Advanced Observability:** X-Ray SDK instrumentation and custom indexed annotations.
+- [ ] **CI/CD Automation (Next Step):** Automated pipelines for multi-account deployments.
+
+## 🛠️ Development & Deployment
+
+### Backend Modules (Java 21)
+Build the standalone artifacts (Fat JARs) using Maven:
 ```bash
+# Build Status Producer
 cd services/status-lambda && mvn clean package
+
+# Build Access Worker
+cd services/worker-lambda && mvn clean package
 ```
 
-**For the Infrastructure (CDK):**
-Run these from the project root:
+### Infrastructure (AWS CDK v2)
+Manage the cloud stack from the root directory:
 *   `cdk synth`: Synthesize the CloudFormation template for local validation.
-*   `cdk deploy --profile portfolio`: Deploy the entire infrastructure to your AWS account.
-*   `cdk diff`: Compare the local state with the deployed cloud resources.
+*   `cdk deploy`: Deploy the complete stack, including SQS triggers and IAM Least Privilege roles.
+*   `cdk diff`: Inspect changes between local code and the deployed environment.
 
+---
 
+### 🧠 Architect's Note: Design Trade-offs
+By choosing an **Asynchronous Persistence** pattern, we prioritize **Availability** and **Low Latency** for the end-user. Even if DynamoDB experiences a rare transient failure, the user's interaction is never blocked; the message remains safe in SQS for automatic retry, ensuring **Eventual Consistency** without compromising performance.
