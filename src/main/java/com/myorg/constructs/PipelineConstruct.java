@@ -32,9 +32,11 @@ public class PipelineConstruct extends Construct{
             // No confiar en los defaults de la imagen: se fija Java 21 (única versión
             // usada en todo el proyecto) y un Node.js reciente (requerido por la CLI
             // de aws-cdk, cuyo bundle WASM necesita soporte de WebAssembly reftypes).
+            // NOTA: la imagen standard:4.0 (AMAZON_LINUX_2023_4) no incluye Corretto 21
+            // como runtime instalable; Corretto 21 solo está disponible desde standard:5.0.
             .codeBuildDefaults(CodeBuildOptions.builder()
                 .buildEnvironment(BuildEnvironment.builder()
-                    .buildImage(LinuxBuildImage.AMAZON_LINUX_2023_4)
+                    .buildImage(LinuxBuildImage.AMAZON_LINUX_2023_5)
                     .build())
                 .partialBuildSpec(BuildSpec.fromObject(Map.of(
                     "phases", Map.of(
