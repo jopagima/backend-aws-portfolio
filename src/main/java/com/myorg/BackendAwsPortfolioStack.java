@@ -2,6 +2,7 @@ package com.myorg;
 
 import com.myorg.constructs.AuthConstruct;
 import com.myorg.constructs.DynamoDBConstruct;
+import com.myorg.constructs.PipelineConstruct;
 import com.myorg.constructs.PortfolioAccessQueue;
 import com.myorg.constructs.PortfolioApiConstruct;
 import com.myorg.constructs.StatusLamdaConstruct;
@@ -54,6 +55,8 @@ public class BackendAwsPortfolioStack extends Stack {
                         .authorizationType(AuthorizationType.COGNITO) // Define que se requiere cognito
                         .authorizer(authConstruct.getAuthorizer()) // asocia el autorizador de cognito al método
                         .build());
+
+        new PipelineConstruct(this, "PortfolioPipeline");
 
     }
 }
