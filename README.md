@@ -29,9 +29,18 @@ As a **Senior Architect** requirement, the system is instrumented for deep visib
 *   **Indexed Annotations:** The `WorkerService` implements custom X-Ray annotations (e.g., `PortfolioUserId`). This allows for sub-second filtering of specific user traces within the AWS Console [Historial].
 *   **Structured Logging:** Correlated logs between the Producer and Consumer via **CloudWatch Logs Insights**, enabling complex queries to debug Jackson parsing or IAM permission issues.
 
+## ⚙️ Continuous Delivery (CI/CD Pipeline)
+
+As of **Day 14**, infrastructure and application changes are no longer deployed manually. The project is driven by a **self-mutating CDK Pipeline** (`PipelineConstruct`), fully defined as code:
+
+*   **Source Stage:** The pipeline tracks the `master` branch on GitHub, authenticating via a token stored in **AWS Secrets Manager** (never hardcoded).
+*   **Synth Stage:** A dedicated **AWS CodeBuild** project (Amazon Linux 2023, Corretto 21 + Node.js 20) builds both microservices' Fat JARs with Maven and then runs `cdk synth` to produce the CloudFormation templates.
+*   **Self-Mutation:** Because the pipeline is defined via CDK, it can safely update its own stages whenever `PipeLineStack` changes, without manual intervention in the AWS Console.
+*   **Explicit Runtime Pinning:** Build environment versions (Java, Node.js, CDK CLI) are pinned explicitly rather than relying on image defaults, avoiding silent breakage from upstream image updates.
+
 ## 📈 Roadmap Progress
 
-Currently completing the **Observability Phase (Day 13)** [Roadmap]:
+Currently completing the **CI/CD Automation Phase (Day 14)** [Roadmap]:
 
 - [x] **Base Configuration:** CDK Bootstrapping, CLI profiles, and security setup.
 - [x] **Status Microservice:** Implementation of the first Lambda Producer.
@@ -39,7 +48,7 @@ Currently completing the **Observability Phase (Day 13)** [Roadmap]:
 - [x] **Asynchronous Flow:** SQS integration and Worker Lambda implementation.
 - [x] **Data Persistence:** DynamoDB schema design and Repository pattern implementation.
 - [x] **Advanced Observability:** X-Ray SDK instrumentation and custom indexed annotations.
-- [ ] **CI/CD Automation (Next Step):** Automated pipelines for multi-account deployments.
+- [x] **CI/CD Automation:** Automated pipelines for multi-account deployments.
 
 ## 🛠️ Development & Deployment
 

@@ -29,7 +29,7 @@ public class PipelineConstruct extends Construct{
         CodePipeline pipeline = CodePipeline.Builder.create(this, id)
             .pipelineName("BackendAwsPortfolioPipeline")
             // --- ENFOQUE SENIOR: FIJAR EXPLÍCITAMENTE LAS VERSIONES DE RUNTIME ---
-            // No confiar en los defaults de la imagen: se fija Java 17 (única versión
+            // No confiar en los defaults de la imagen: se fija Java 21 (única versión
             // usada en todo el proyecto) y un Node.js reciente (requerido por la CLI
             // de aws-cdk, cuyo bundle WASM necesita soporte de WebAssembly reftypes).
             .codeBuildDefaults(CodeBuildOptions.builder()
@@ -40,7 +40,7 @@ public class PipelineConstruct extends Construct{
                     "phases", Map.of(
                         "install", Map.of(
                             "runtime-versions", Map.of(
-                                "java", "corretto17",
+                                "java", "corretto21",
                                 "nodejs", "20"
                             )
                         )
@@ -57,7 +57,7 @@ public class PipelineConstruct extends Construct{
                     "cd ../worker-lambda && mvn clean package",
                     // 3. Regresar a la raíz y sintetizar infraestructura CDK
                     "cd ../..",
-                    "npm install -g aws-cdk",
+                    "npm install -g aws-cdk@2.1135.1",
                     "cdk synth"
                 ))
                 .build())
