@@ -36,7 +36,7 @@ public class PipelineConstruct extends Construct{
             // como runtime instalable; Corretto 21 solo está disponible desde standard:5.0.
             .codeBuildDefaults(CodeBuildOptions.builder()
                 .buildEnvironment(BuildEnvironment.builder()
-                    .buildImage(LinuxBuildImage.AMAZON_LINUX_2023_5)
+                    .buildImage(LinuxBuildImage.STANDARD_7_0)
                     .build())
                 .partialBuildSpec(BuildSpec.fromObject(Map.of(
                     "phases", Map.of(
