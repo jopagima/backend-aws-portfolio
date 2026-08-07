@@ -6,9 +6,11 @@ import software.amazon.awscdk.pipelines.CodePipelineSource;
 import software.amazon.awscdk.pipelines.GitHubSourceOptions;
 import software.amazon.awscdk.pipelines.ShellStep;
 import software.amazon.awscdk.services.codebuild.BuildEnvironment;
+import software.amazon.awscdk.services.codebuild.BuildSpec;
 import software.amazon.awscdk.services.codebuild.LinuxBuildImage;
 import software.constructs.Construct;
 import java.util.List;
+import java.util.Map;
 
 public class PipelineConstruct extends Construct{
 
@@ -26,13 +28,26 @@ public class PipelineConstruct extends Construct{
         //Aqui conguramoes los comandos de compilación de maven para los microservicios de java
         CodePipeline pipeline = CodePipeline.Builder.create(this, id)
             .pipelineName("BackendAwsPortfolioPipeline")
-            // --- ENFOQUE SENIOR: ESPECIFICAR ENTORNO JAVA 17 (única versión usada en todo el proyecto) ---
+            // --- ENFOQUE SENIOR: FIJAR EXPLÍCITAMENTE LAS VERSIONES DE RUNTIME ---
+            // No confiar en los defaults de la imagen: se fija Java 17 (única versión
+            // usada en todo el proyecto) y un Node.js reciente (requerido por la CLI
+            // de aws-cdk, cuyo bundle WASM necesita soporte de WebAssembly reftypes).
             .codeBuildDefaults(CodeBuildOptions.builder()
                 .buildEnvironment(BuildEnvironment.builder()
-                    .buildImage(LinuxBuildImage.AMAZON_LINUX_2023_4) // Imagen AL2023; javac por defecto es Java 17
+                    .buildImage(LinuxBuildImage.AMAZON_LINUX_2023_4)
                     .build())
+                .partialBuildSpec(BuildSpec.fromObject(Map.of(
+                    "phases", Map.of(
+                        "install", Map.of(
+                            "runtime-versions", Map.of(
+                                "java", "corretto17",
+                                "nodejs", "20"
+                            )
+                        )
+                    )
+                )))
                 .build())
-            // --------------------------------------------------            
+            // --------------------------------------------------
             .synth(ShellStep.Builder.create("Synth")
                 .input(source)
                 .commands(List.of(
